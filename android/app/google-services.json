@@ -1,0 +1,85 @@
+{
+  "project_info": {
+    "project_number": "919520920180",
+    "firebase_url": "https://dota-chatwheel.firebaseio.com",
+    "project_id": "dota-chatwheel",
+    "storage_bucket": "dota-chatwheel.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:919520920180:android:360385ffbf92d5fb0e8721",
+        "android_client_info": {
+          "package_name": "me.jamilalrasyidis.ggwp_chatwheel_ringtone"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "919520920180-d9icc46982c8mnnh8ml0vg6jbvnvstqk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.jamilalrasyidis.ggwp_chatwheel_ringtone",
+            "certificate_hash": "1a9939bc92c380e03115a4b8e40caac30f1b9a06"
+          }
+        },
+        {
+          "client_id": "919520920180-30b00vosu6fkqpj1ct6v55rauobs8kau.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDrWou3Boy1P6MLJSUt74oe7VOmtEaB40"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "919520920180-30b00vosu6fkqpj1ct6v55rauobs8kau.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:919520920180:android:c84693a65f6fd7a00e8721",
+        "android_client_info": {
+          "package_name": "me.jamilalrasyidis.kumpulan_lirik_lagu_kebangsaan"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "919520920180-j400d8gbpvdteimbh1hv6dlvlrc8ej45.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.jamilalrasyidis.kumpulan_lirik_lagu_kebangsaan",
+            "certificate_hash": "3373730b3dbc3405fa0a2f51f938d5cefcacc369"
+          }
+        },
+        {
+          "client_id": "919520920180-30b00vosu6fkqpj1ct6v55rauobs8kau.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDrWou3Boy1P6MLJSUt74oe7VOmtEaB40"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "919520920180-30b00vosu6fkqpj1ct6v55rauobs8kau.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
