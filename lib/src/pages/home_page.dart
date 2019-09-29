@@ -3,9 +3,13 @@ import 'package:kumpulan_lirik_lagu_kebangsaan/src/data_holder.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/lyric.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/pages/about_page.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/pages/detail_page.dart';
+import 'package:kumpulan_lirik_lagu_kebangsaan/src/pages/favorite_page.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/pages/privacy_policy_page.dart';
+import 'package:kumpulan_lirik_lagu_kebangsaan/src/ui/lyric_list_item.dart';
+import 'package:kumpulan_lirik_lagu_kebangsaan/src/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:kumpulan_lirik_lagu_kebangsaan/src/ui/custom_appbar.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -14,8 +18,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
-  TabController _tabController;
   List<Lyric> _lyrics;
+  List<Lyric> _favsLyrics;
 
   Future<List<Lyric>> _getDataFavorite() async {
     List<Lyric> _lyricFav = [];
@@ -34,109 +38,30 @@ class _HomePageState extends State<HomePage>
     return _lyricFav;
   }
 
-  void _storeFavorite(String id) {
-    SharedPreferences.getInstance().then((spref) {
-      if (spref.getStringList('favs').isEmpty) {
-        List<String> currentFavs = [];
-        currentFavs.add(id);
-        spref.setStringList('favs', currentFavs);
-      } else {
-        List<String> currentFavs = spref.getStringList('favs');
-        currentFavs.add(id);
-        spref.setStringList('favs', currentFavs);
-      }
-    });
-  }
-
-  void _removeFavorite(String id) {
-    SharedPreferences.getInstance().then((spref) {
-      List<String> currentFavs = spref.getStringList('favs');
-      currentFavs.removeWhere((sprefId) => sprefId == id);
-      spref.setStringList('favs', currentFavs);
-    });
-  }
-
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _lyrics = DataHolder.dataLyrics;
-    // DataHolder.dataLyrics.where((lyric) => lyric.isFavored == true).forEach((lyric) {
-    //   _lyricFavs.add(lyric);
-    // });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Lirik Lagu Nasional'),
-      ),
       drawer: _buildDrawerWidget(),
-      body: TabBarView(
-        controller: _tabController,
-        children: <Widget>[
-          _buildLirikLaguWidget(_lyrics),
-          FutureBuilder<List<Lyric>>(
-            future: this._getDataFavorite(),
-            builder:
-                (BuildContext context, AsyncSnapshot<List<Lyric>> snapshot) {
-              return snapshot.hasData
-                  ? _buildFavoriteWidget(snapshot.data)
-                  : Center(
-                      child: CircularProgressIndicator(),
-                    );
-            },
-          )
-        ],
-      ),
-      bottomNavigationBar: Material(
-        color: Theme.of(context).primaryColor,
-        child: TabBar(
-          controller: _tabController,
-          tabs: <Widget>[
-            Tab(
-              icon: Icon(
-                Icons.list,
-              ),
-              text: 'Daftar Lirik',
-            ),
-            Tab(
-              icon: Icon(
-                Icons.favorite,
-              ),
-              text: 'Favorite',
-            )
-          ],
-        ),
-      ),
+      body: CustomAppbar(_buildLirikLaguWidget(_lyrics)),
     );
   }
 
   Widget _buildLirikLaguWidget(List<Lyric> lyrics) {
     return lyrics.length != 0 && lyrics != null
         ? ListView.builder(
-            padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+            padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
             itemCount: lyrics != null && lyrics.length > 0 ? lyrics.length : 0,
             itemBuilder: (BuildContext context, int index) =>
-                _buildListItem(lyrics[index]),
+                LyricListItem(),
           )
         : Center(
             child: Text('Tidak ada data, pastikan terhubung ke internet'),
-          );
-  }
-
-  Widget _buildFavoriteWidget(List<Lyric> lyrics) {
-    return lyrics.length != 0 && lyrics != null
-        ? ListView.builder(
-            padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-            itemCount: lyrics != null && lyrics.length > 0 ? lyrics.length : 0,
-            itemBuilder: (BuildContext context, int index) {
-              return _buildListItem(lyrics[index]);
-            },
-          )
-        : Center(
-            child: Text('Belum ada daftar favorite'),
           );
   }
 
@@ -147,32 +72,30 @@ class _HomePageState extends State<HomePage>
         padding: const EdgeInsets.all(8.0),
         child: ListTile(
           leading: IconButton(
-            icon: lyric.isFavored
-                ? Icon(
-                    Icons.favorite,
-                    color: Colors.red,
-                  )
-                : Icon(Icons.favorite_border),
-            onPressed: lyric.isFavored
-                ? () {
-                    setState(() {
-                      lyric.isFavored = false;
-                    });
-                    _removeFavorite(lyric.id);
-                  }
-                : () {
-                    setState(() {
-                      lyric.isFavored = true;
-                    });
-                    _storeFavorite(lyric.id);
-                  },
-          ),
+              icon: lyric.isFavored
+                  ? Icon(
+                      Icons.favorite,
+                      color: Colors.red,
+                    )
+                  : Icon(Icons.favorite_border),
+              onPressed: lyric.isFavored
+                  ? () {
+                      setState(() {
+                        lyric.isFavored = false;
+                      });
+                      SprefUtil.removeFavorite(lyric.id);
+                    }
+                  : () {
+                      setState(() {
+                        lyric.isFavored = true;
+                      });
+                      SprefUtil.storeFavorite(lyric.id);
+                    }),
           trailing: IconButton(
             icon: Icon(Icons.arrow_forward_ios),
             onPressed: () {
               Navigator.of(context).push(MaterialPageRoute(
-                builder: (BuildContext context) => DetailPage(lyric: lyric)
-              ));
+                  builder: (BuildContext context) => DetailPage(lyric: lyric)));
             },
           ),
           title: Text(
@@ -224,19 +147,28 @@ class _HomePageState extends State<HomePage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               ListTile(
+                leading: Icon(Icons.favorite_border),
+                title: Text('Lirik Favorit'),
+                onTap: () async {
+                  _favsLyrics = await this._getDataFavorite();
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (BuildContext context) => FavoritePage(_favsLyrics)));
+                },
+              ),
+              ListTile(
                 leading: Icon(Icons.lock_outline),
                 title: Text('Privacy Policy'),
                 onTap: () {
                   Navigator.of(context).push(MaterialPageRoute(
-                    builder: (BuildContext context) => PrivacyPolicyPage()
-                  ));
+                      builder: (BuildContext context) => PrivacyPolicyPage()));
                 },
               ),
               ListTile(
                 leading: Icon(Icons.apps),
                 title: Text('Aplikasi Lainnya'),
                 onTap: () async {
-                  const url = 'https://play.google.com/store/apps/developer?id=RasyidCODE';
+                  const url =
+                      'https://play.google.com/store/apps/developer?id=RasyidCODE';
                   if (await canLaunch(url)) {
                     await launch(url);
                   } else {
@@ -249,8 +181,7 @@ class _HomePageState extends State<HomePage>
                 title: Text('Tentang Aplikasi'),
                 onTap: () {
                   Navigator.of(context).push(MaterialPageRoute(
-                    builder: (BuildContext context) => AboutPage()
-                  ));
+                      builder: (BuildContext context) => AboutPage()));
                 },
               ),
             ],

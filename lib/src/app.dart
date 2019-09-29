@@ -11,7 +11,8 @@ class KumpulanLirikLaguKebangsaanApp extends StatelessWidget {
     return MaterialApp(
       title: 'Kumpulan Lirik Lagu Kebangsaan',
       theme: ThemeData(
-        primarySwatch: Colors.red
+        primaryColor: Colors.red,
+        accentColor: Colors.redAccent
       ),
       home: SplashScreenPage(),
     );
