@@ -63,7 +63,7 @@ class AdsUtil {
 
   static BannerAd _createBannerAd() {
     return BannerAd(
-      adUnitId: BannerAd.testAdUnitId,
+      adUnitId: BANNER_ID,
       size: AdSize.smartBanner,
       listener: (MobileAdEvent event) {
         print('BannerAd event $event');
@@ -73,7 +73,7 @@ class AdsUtil {
 
   static InterstitialAd _createInterstitialAds() {
     return InterstitialAd(
-      adUnitId: InterstitialAd.testAdUnitId,
+      adUnitId: INTERSTITIAL_ID,
       listener: (MobileAdEvent event) {
         print('InterstitialAd event $event');
       }
