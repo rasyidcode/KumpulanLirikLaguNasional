@@ -26,6 +26,7 @@ class Lyric {
   String get desc => _desc;
   String get videoId => _videoId;
   String get audioUrl => _audioUrl;
+  CoverImage get coverImage => _coverImage;
 }
 
 class CoverImage {

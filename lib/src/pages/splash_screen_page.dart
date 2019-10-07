@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/data_holder.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/lyric.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/pages/home_page.dart';
+import 'package:kumpulan_lirik_lagu_kebangsaan/src/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -20,6 +21,8 @@ class _SplashScreenPageState extends State<SplashScreenPage> {
   Future<Timer> _loadData() async {
     /* testing code */
     // int counter = 1;
+    SprefUtil.resetAdsCounter();
+    
     await SharedPreferences.getInstance().then((spref) {
       List<String> currentFavs = spref.getStringList('favs') ?? [];
 
@@ -80,7 +83,6 @@ class _SplashScreenPageState extends State<SplashScreenPage> {
   void initState() {
     super.initState();
     _isLoading = true;
-
     _loadData();
   }
 

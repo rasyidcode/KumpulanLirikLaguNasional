@@ -10,6 +10,8 @@ import 'package:kumpulan_lirik_lagu_kebangsaan/src/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/ui/custom_appbar.dart';
+import 'package:kumpulan_lirik_lagu_kebangsaan/src/personal/admob.dart'
+    show APP_ID;
 
 class HomePage extends StatefulWidget {
   @override
@@ -19,36 +21,35 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   List<Lyric> _lyrics;
-  List<Lyric> _favsLyrics;
-
-  Future<List<Lyric>> _getDataFavorite() async {
-    List<Lyric> _lyricFav = [];
-
-    await SharedPreferences.getInstance().then((spref) {
-      List<String> currentFavs = spref.getStringList('favs');
-      if (currentFavs.isNotEmpty) {
-        currentFavs.forEach((id) {
-          setState(() {
-            _lyricFav.add(_lyrics.singleWhere((lyric) => lyric.id == id));
-          });
-        });
-      }
-    });
-
-    return _lyricFav;
-  }
 
   @override
   void initState() {
     super.initState();
     _lyrics = DataHolder.dataLyrics;
+    AdsUtil.initialize();
+    AdsUtil.showBannerAd();
+  }
+
+  @override
+  void dispose() {
+    AdsUtil.hideBannerAd();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: _buildDrawerWidget(),
-      body: CustomAppbar(_buildLirikLaguWidget(_lyrics)),
+      body: Column(
+        children: <Widget>[
+          Expanded(child: CustomAppbar(_buildLirikLaguWidget(_lyrics))),
+          Container(
+            height: 50.0,
+            width: double.infinity,
+            color: Colors.transparent,
+          )
+        ],
+      ),
     );
   }
 
@@ -57,56 +58,43 @@ class _HomePageState extends State<HomePage>
         ? ListView.builder(
             padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
             itemCount: lyrics != null && lyrics.length > 0 ? lyrics.length : 0,
-            itemBuilder: (BuildContext context, int index) =>
-                LyricListItem(),
+            itemBuilder: (BuildContext context, int index) => LyricListItem(
+              onCardPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (BuildContext context) => DetailPage(
+                      lyric: lyrics[index],
+                    ),
+                  ),
+                );
+              },
+              icon: lyrics[index].isFavored
+                  ? Icon(
+                      Icons.favorite,
+                      color: Colors.pink,
+                    )
+                  : Icon(Icons.favorite_border),
+              lyric: lyrics[index],
+              onFavoriteButtonPressed: lyrics[index].isFavored
+                  ? () {
+                      setState(() {
+                        lyrics[index].isFavored = false;
+                      });
+                      SprefUtil.removeFavorite(lyrics[index].id);
+                      SprefUtil.adsCounter();
+                    }
+                  : () {
+                      setState(() {
+                        lyrics[index].isFavored = true;
+                      });
+                      SprefUtil.storeFavorite(lyrics[index].id);
+                      SprefUtil.adsCounter();
+                    },
+            ),
           )
         : Center(
             child: Text('Tidak ada data, pastikan terhubung ke internet'),
           );
-  }
-
-  Widget _buildListItem(Lyric lyric) {
-    return Card(
-      elevation: 1.0,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: ListTile(
-          leading: IconButton(
-              icon: lyric.isFavored
-                  ? Icon(
-                      Icons.favorite,
-                      color: Colors.red,
-                    )
-                  : Icon(Icons.favorite_border),
-              onPressed: lyric.isFavored
-                  ? () {
-                      setState(() {
-                        lyric.isFavored = false;
-                      });
-                      SprefUtil.removeFavorite(lyric.id);
-                    }
-                  : () {
-                      setState(() {
-                        lyric.isFavored = true;
-                      });
-                      SprefUtil.storeFavorite(lyric.id);
-                    }),
-          trailing: IconButton(
-            icon: Icon(Icons.arrow_forward_ios),
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (BuildContext context) => DetailPage(lyric: lyric)));
-            },
-          ),
-          title: Text(
-            lyric.title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          subtitle: Text('Oleh : ${lyric.maker}'),
-        ),
-      ),
-    );
   }
 
   Widget _buildDrawerWidget() {
@@ -147,24 +135,39 @@ class _HomePageState extends State<HomePage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               ListTile(
-                leading: Icon(Icons.favorite_border),
+                leading: Icon(
+                  Icons.favorite,
+                  color: Colors.pink,
+                ),
                 title: Text('Lirik Favorit'),
-                onTap: () async {
-                  _favsLyrics = await this._getDataFavorite();
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (BuildContext context) => FavoritePage(_favsLyrics)));
+                onTap: () {
+                  Navigator.of(context)
+                      .push(MaterialPageRoute(
+                          builder: (BuildContext context) => FavoritePage()))
+                      .then((value) {
+                    AdsUtil.showBannerAd();
+                  });
                 },
               ),
               ListTile(
-                leading: Icon(Icons.lock_outline),
+                leading: Icon(Icons.lock_outline, color: Colors.black),
                 title: Text('Privacy Policy'),
                 onTap: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (BuildContext context) => PrivacyPolicyPage()));
+                  Navigator.of(context)
+                      .push(MaterialPageRoute(
+                          builder: (BuildContext context) =>
+                              PrivacyPolicyPage()))
+                      .then((value) {
+                    AdsUtil.showBannerAd();
+                  });
+                  ;
                 },
               ),
               ListTile(
-                leading: Icon(Icons.apps),
+                leading: Icon(
+                  Icons.apps,
+                  color: Colors.green,
+                ),
                 title: Text('Aplikasi Lainnya'),
                 onTap: () async {
                   const url =
@@ -177,11 +180,18 @@ class _HomePageState extends State<HomePage>
                 },
               ),
               ListTile(
-                leading: Icon(Icons.info),
-                title: Text('Tentang Aplikasi'),
+                leading: Icon(
+                  Icons.info,
+                  color: Colors.blue,
+                ),
+                title: Text('About'),
                 onTap: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (BuildContext context) => AboutPage()));
+                  Navigator.of(context)
+                      .push(MaterialPageRoute(
+                          builder: (BuildContext context) => AboutPage()))
+                      .then((value) {
+                    AdsUtil.showBannerAd();
+                  });
                 },
               ),
             ],

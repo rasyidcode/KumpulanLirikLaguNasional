@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kumpulan_lirik_lagu_kebangsaan/src/utils.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class PrivacyPolicyPage extends StatefulWidget {
@@ -26,6 +27,7 @@ class _PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
   @override
   void initState() {
     super.initState();
+    AdsUtil.hideBannerAd();
   }
 
   @override
