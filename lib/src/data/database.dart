@@ -26,6 +26,12 @@ class LyricDatabase {
     return db;
   }
 
+  Future close() async {
+    Database db = await _getDatabase();
+
+    return db.close();
+  }
+
   Future<Null> removeFavoriteLyric(String id) async {
     Database db = await _getDatabase();
 
@@ -132,4 +138,5 @@ class LyricDatabase {
         "${Lyric.DB_COVER_IMAGE_SOURCE} TEXT"
         ")");
   }
+
 }
