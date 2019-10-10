@@ -1,4 +1,15 @@
 class Lyric {
+  static const String DB_ID = "id";
+  static const String DB_TITLE = "title";
+  static const String DB_MAKER = "maker";
+  static const String DB_LYRICS = "lyrics";
+  static const String DB_DESC = "desc";
+  static const String DB_VIDEO_ID = "video_id";
+  static const String DB_AUDIO_URL = "audio_url";
+  static const String DB_IS_FAVORED = "is_favored";
+  static const String DB_COVER_IMAGE_URL = "cover_image_url";
+  static const String DB_COVER_IMAGE_SOURCE = "cover_image_source";
+
   String id;
   final String _title;
   final String _maker;
