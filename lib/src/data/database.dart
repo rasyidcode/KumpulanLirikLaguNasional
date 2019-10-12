@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/lyric.dart';
+import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/api/lyric_api.dart';
+import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/entity/lyric_entity.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/sqlite_api.dart';
@@ -32,70 +33,88 @@ class LyricDatabase {
     return db.close();
   }
 
+  Future<int> lyricsCount() async {
+    Database db = await _getDatabase();
+    List<Map<String, dynamic>> data =
+        await db.rawQuery('SELECT * FROM $tableName');
+
+    return data.length;
+  }
+
   Future<Null> removeFavoriteLyric(String id) async {
     Database db = await _getDatabase();
 
-    await db.rawUpdate(
-      'UPDATE $tableName SET ${Lyric.DB_IS_FAVORED} = ? WHERE ${Lyric.DB_ID} = $id',
-      [0],
+    int value = await db.rawUpdate(
+      'UPDATE $tableName SET ${LyricEntity.DB_IS_FAVORED} = "0" WHERE ${LyricEntity.DB_ID} = "$id"',
     );
+    print('removed state: '+value.toString());
   }
 
   Future<Null> makeFavoriteLyric(String id) async {
     Database db = await _getDatabase();
+    print('here is id : '+id);
+    List<Map<String, dynamic>> lyrics = await db.rawQuery('SELECT * FROM $tableName WHERE ${LyricEntity.DB_ID} = ("$id")');
+    // List<Map<String, dynamic>> lyrics2 = await db.query(tableName, where: '${LyricEntity.DB_ID} = ?', whereArgs: ['$id']);
+    // print(lyrics[0]);
 
-    await db.rawUpdate(
-        'UPDATE $tableName SET ${Lyric.DB_IS_FAVORED} = ? WHERE ${Lyric.DB_ID} = $id',
-        [1]);
+    int value = await db.rawUpdate(
+        'UPDATE $tableName SET ${LyricEntity.DB_IS_FAVORED} = "1" WHERE ${LyricEntity.DB_ID} = "$id"');
+
+    print('added state: '+value.toString());
   }
 
-  Future<List<Lyric>> getFavoriteLyrics() async {
+  Future<List<LyricEntity>> getFavoriteLyrics() async {
     Database db = await _getDatabase();
     List<Map<String, dynamic>> result = await db.rawQuery(
-        'SELECT * FROM $tableName WHERE ${Lyric.DB_IS_FAVORED} = "1"');
+        'SELECT * FROM $tableName WHERE ${LyricEntity.DB_IS_FAVORED} = "1"');
 
     if (result.length == 0) return [];
 
-    List<Lyric> lyrics = [];
+    List<LyricEntity> lyrics = [];
 
     for (Map<String, dynamic> map in result) {
-      lyrics.add(Lyric.fromMap(map));
+      lyrics.add(LyricEntity.fromMap(map));
     }
 
     return lyrics;
   }
 
-  Future<List<Lyric>> getLyrics() async {
-    List<Lyric> lyrics = <Lyric>[];
+  Future<List<LyricEntity>> getLyrics(String title) async {
+    List<LyricEntity> lyrics = <LyricEntity>[];
     Database db = await _getDatabase();
+    List<Map<String, dynamic>> result;
 
-    List<Map<String, dynamic>> result =
-        await db.rawQuery('SELECT * FROM $tableName');
+    if (title == '') {
+      result = await db.rawQuery('SELECT * FROM $tableName');
+    } else {
+      result = await db.rawQuery(
+          'SELECT * FROM $tableName WHERE ${LyricEntity.DB_TITLE} LIKE "%$title%"');
+    }
 
     for (Map<String, dynamic> map in result) {
-      lyrics.add(Lyric.fromMap(map));
+      lyrics.add(LyricEntity.fromMap(map));
     }
 
     return lyrics;
   }
 
-  Future<Null> insertLyrics(List<Lyric> lyrics) async {
+  Future<Null> insertLyrics(List<LyricApi> lyrics) async {
     Database db = await _getDatabase();
 
     await db.transaction((t) async {
-      for (Lyric lyric in lyrics) {
-        await t.rawInsert('$tableName'
+      for (LyricApi lyric in lyrics) {
+        await t.rawInsert('INSERT OR REPLACE INTO $tableName'
             '('
-            '${Lyric.DB_ID},'
-            '${Lyric.DB_TITLE},'
-            '${Lyric.DB_MAKER},'
-            '${Lyric.DB_LYRICS},'
-            '${Lyric.DB_DESC},'
-            '${Lyric.DB_VIDEO_ID},'
-            '${Lyric.DB_AUDIO_URL},'
-            '${Lyric.DB_IS_FAVORED},'
-            '${Lyric.DB_COVER_IMAGE_URL},'
-            '${Lyric.DB_COVER_IMAGE_SOURCE}'
+            '${LyricEntity.DB_ID}, '
+            '${LyricEntity.DB_TITLE}, '
+            '${LyricEntity.DB_MAKER}, '
+            '${LyricEntity.DB_LYRICS}, '
+            '${LyricEntity.DB_DESC}, '
+            '${LyricEntity.DB_VIDEO_ID}, '
+            '${LyricEntity.DB_AUDIO_URL}, '
+            '${LyricEntity.DB_IS_FAVORED}, '
+            '${LyricEntity.DB_COVER_IMAGE_URL}, '
+            '${LyricEntity.DB_COVER_IMAGE_SOURCE}'
             ')'
             ' '
             'VALUES'
@@ -106,6 +125,7 @@ class LyricDatabase {
             '"${lyric.lyrics}", '
             '"${lyric.desc}", '
             '"${lyric.videoId}", '
+            '"${lyric.audioUrl}", '
             '"${lyric.isFavored ? 1 : 0}", '
             '"${lyric.coverImage.url}", '
             '"${lyric.coverImage.source}"'
@@ -126,17 +146,16 @@ class LyricDatabase {
   void _createDB(Database db, int version) async {
     await db.execute("CREATE TABLE $tableName"
         "("
-        "${Lyric.DB_ID} STRING PRIMARY_KEY,"
-        "${Lyric.DB_TITLE} TEXT,"
-        "${Lyric.DB_MAKER} TEXT,"
-        "${Lyric.DB_LYRICS} TEXT,"
-        "${Lyric.DB_DESC} TEXT,"
-        "${Lyric.DB_VIDEO_ID} TEXT,"
-        "${Lyric.DB_AUDIO_URL} TEXT,"
-        "${Lyric.DB_IS_FAVORED} BIT,"
-        "${Lyric.DB_COVER_IMAGE_URL} TEXT,"
-        "${Lyric.DB_COVER_IMAGE_SOURCE} TEXT"
+        "${LyricEntity.DB_ID} TEXT PRIMARY_KEY, "
+        "${LyricEntity.DB_TITLE} TEXT, "
+        "${LyricEntity.DB_MAKER} TEXT, "
+        "${LyricEntity.DB_LYRICS} TEXT, "
+        "${LyricEntity.DB_DESC} TEXT, "
+        "${LyricEntity.DB_VIDEO_ID} TEXT, "
+        "${LyricEntity.DB_AUDIO_URL} TEXT, "
+        "${LyricEntity.DB_IS_FAVORED} BIT, "
+        "${LyricEntity.DB_COVER_IMAGE_URL} TEXT, "
+        "${LyricEntity.DB_COVER_IMAGE_SOURCE} TEXT"
         ")");
   }
-
 }

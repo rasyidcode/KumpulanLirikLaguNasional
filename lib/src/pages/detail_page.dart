@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/lyric.dart';
 // import 'package:url_launcher/url_launcher.dart';
 // import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/entity/lyric_entity.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/ui/control_audio_button.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/utils.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -12,7 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 enum PlayerState { stopped, playing, paused }
 
 class DetailPage extends StatefulWidget {
-  final Lyric lyric;
+  final LyricEntity lyric;
 
   DetailPage({@required this.lyric});
 
@@ -40,7 +40,7 @@ class _DetailPageState extends State<DetailPage> {
   get _durationText => _duration?.toString()?.split('.')?.first ?? '';
   get _positionText => _position?.toString()?.split('.')?.first ?? '';
 
-  Lyric lyric;
+  LyricEntity lyric;
 
   void _initAudioPlayer() {
     _audioPlayer = AudioPlayer(mode: _mode);
@@ -157,7 +157,7 @@ class _DetailPageState extends State<DetailPage> {
           Stack(
             children: <Widget>[
               Image.network(
-                lyric.coverImage.url,
+                lyric.coverImageUrl,
                 fit: BoxFit.cover,
                 height: querySize.height * .3,
                 width: double.infinity,
@@ -281,7 +281,7 @@ class _DetailPageState extends State<DetailPage> {
                             padding: const EdgeInsets.only(left: 0.0),
                             child: GestureDetector(
                               onTap: () async {
-                                String url = lyric.coverImage.source;
+                                String url = lyric.coverImageSource;
                                 if (await canLaunch(url)) {
                                   await launch(url);
                                 } else {

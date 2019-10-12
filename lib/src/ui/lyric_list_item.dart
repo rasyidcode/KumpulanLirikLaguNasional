@@ -1,31 +1,34 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/lyric.dart';
+import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/entity/lyric_entity.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/pages/detail_page.dart';
 
 class LyricListItem extends StatelessWidget {
-  final Lyric lyric;
+  final LyricEntity lyric;
   final Function onFavoriteButtonPressed;
   final Function onCardPressed;
   final Icon icon;
 
-  LyricListItem({
-    @required this.lyric,
-    @required this.onFavoriteButtonPressed,
-    @required this.icon,
-    @required this.onCardPressed
-  });
+  LyricListItem(
+      {@required this.lyric,
+      @required this.onFavoriteButtonPressed,
+      @required this.icon,
+      @required this.onCardPressed});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onCardPressed,
-          child: Card(
+      child: Card(
         clipBehavior: Clip.antiAliasWithSaveLayer,
         child: Container(
           child: Row(
             children: <Widget>[
-              Image.network(
-                lyric.coverImage.url,
+              CachedNetworkImage(
+                imageUrl:
+                    lyric.coverImageUrl,
+                placeholder: (_, __) => CircularProgressIndicator(value: 5, strokeWidth: 2,),
+                errorWidget: (_, __, ___) => Icon(Icons.error),
                 fit: BoxFit.cover,
                 width: 80.0,
                 height: 60.0,
@@ -50,10 +53,7 @@ class LyricListItem extends StatelessWidget {
                   ),
                 ),
               ),
-              IconButton(
-                onPressed: onFavoriteButtonPressed,
-                icon: icon
-              )
+              IconButton(onPressed: onFavoriteButtonPressed, icon: icon)
             ],
           ),
         ),

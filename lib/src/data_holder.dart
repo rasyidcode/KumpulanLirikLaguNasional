@@ -1,7 +1,7 @@
-import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/lyric.dart';
+import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/entity/lyric_entity.dart';
 
 class DataHolder {
-  static List<Lyric> dataLyrics = [];
+  static List<LyricEntity> dataLyrics = [];
 
   static List<Map> dataExampleLyrics = [
     {

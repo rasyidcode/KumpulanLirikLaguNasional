@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/lyric.dart';
+import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/api/lyric_api.dart';
+
 
 class ApiService {
   static final ApiService apiService = ApiService._internal();
@@ -10,13 +11,14 @@ class ApiService {
 
   ApiService._internal();
 
-  Future<List<Lyric>> fetchLyrics() async {
-    List<Lyric> lyrics = <Lyric>[];
+  Future<List<LyricApi>> fetchLyrics() async {
+    List<LyricApi> lyrics = <LyricApi>[];
 
     await _db.collection('lirik_lagu_nasional').getDocuments().then((QuerySnapshot snapshot) {
       snapshot.documents.forEach((DocumentSnapshot document) {
-        Lyric lyric = Lyric.fromMap(document.data);
+        LyricApi lyric = LyricApi.fromMap(document.data);
         lyric.id = document.documentID;
+        lyric.lyrics = lyric.lyrics.replaceAll('\n', '\\n');
 
         lyrics.add(lyric);
       });

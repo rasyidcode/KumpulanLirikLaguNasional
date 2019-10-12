@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/data_holder.dart';
-import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/lyric.dart';
+import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/entity/lyric_entity.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/pages/detail_page.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/utils.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class FavoritePage extends StatefulWidget {
   @override
@@ -12,27 +11,27 @@ class FavoritePage extends StatefulWidget {
 }
 
 class _FavoritePageState extends State<FavoritePage> {
-  Future<List<Lyric>> _getDataFavorite() async {
-    List<Lyric> _lyricFav = [];
+  Future<List<LyricEntity>> _getDataFavorite() async {
+    List<LyricEntity> _lyricFav = [];
 
-    await SharedPreferences.getInstance().then((spref) {
-      List<String> currentFavs = spref.getStringList('favs');
-      if (currentFavs.isNotEmpty) {
-        currentFavs.forEach((id) {
-          setState(() {
-            _lyricFav.add(
-                DataHolder.dataLyrics.singleWhere((lyric) => lyric.id == id));
-          });
-        });
-      }
-    });
+    // await SharedPreferences.getInstance().then((spref) {
+    //   List<String> currentFavs = spref.getStringList('favs');
+    //   if (currentFavs.isNotEmpty) {
+    //     currentFavs.forEach((id) {
+    //       setState(() {
+    //         _lyricFav.add(
+    //             DataHolder.dataLyrics.singleWhere((lyric) => lyric.id == id));
+    //       });
+    //     });
+    //   }
+    // });
 
     return _lyricFav;
   }
 
-  void onFavoritePressed(Lyric lyric) async {
+  void onFavoritePressed(LyricEntity lyric) async {
     lyric.isFavored = false;
-    SprefUtil.removeFavorite(lyric.id);
+    // SprefUtil.removeFavorite(lyric.id);
     setState(() {});
   }
 
@@ -51,7 +50,7 @@ class _FavoritePageState extends State<FavoritePage> {
       ),
       body: FutureBuilder(
         future: _getDataFavorite(),
-        builder: (BuildContext context, AsyncSnapshot<List<Lyric>> snapshot) {
+        builder: (BuildContext context, AsyncSnapshot<List<LyricEntity>> snapshot) {
           if (snapshot.hasError) {
             print(snapshot.error);
             return Center(
@@ -85,7 +84,7 @@ class _FavoritePageState extends State<FavoritePage> {
     );
   }
 
-  Widget _buildCardWidget(Lyric lyric) {
+  Widget _buildCardWidget(LyricEntity lyric) {
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
@@ -100,7 +99,7 @@ class _FavoritePageState extends State<FavoritePage> {
         child: Stack(
           children: <Widget>[
             Image.network(
-              lyric.coverImage.url,
+              lyric.coverImageUrl,
               fit: BoxFit.cover,
               height: double.infinity,
             ),

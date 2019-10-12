@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:kumpulan_lirik_lagu_kebangsaan/src/data_holder.dart';
-import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/lyric.dart';
+import 'package:kumpulan_lirik_lagu_kebangsaan/src/data/repository.dart';
+import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/entity/lyric_entity.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/pages/about_page.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/pages/detail_page.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/pages/favorite_page.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/pages/privacy_policy_page.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/ui/lyric_list_item.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/utils.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/ui/custom_appbar.dart';
-import 'package:kumpulan_lirik_lagu_kebangsaan/src/personal/admob.dart'
-    show APP_ID;
 
 class HomePage extends StatefulWidget {
   @override
@@ -20,19 +18,52 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
-  List<Lyric> _lyrics;
+  final PublishSubject<String> _subject = PublishSubject<String>();
+  bool _isLoading = false;
+  List<LyricEntity> _lyrics = <LyricEntity>[];
+
+  void _textChanged(String value) {
+    setState(() {
+      _isLoading = true;
+    });
+    _clearList();
+
+    Repository.get().getLyrics(value).then((data) {
+      setState(() {
+        _isLoading = false;
+        _lyrics = data;
+      });
+    });
+  }
+
+  void _clearList() {
+    setState(() {
+      _lyrics.clear();
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    _lyrics = DataHolder.dataLyrics;
     AdsUtil.initialize();
     AdsUtil.showBannerAd();
+
+    _subject.stream
+        .debounce((String _) => TimerStream(true, Duration(milliseconds: 600)))
+        .listen(_textChanged);
+    print('run this first');
+    Repository.get().getLyrics('').then((data) {
+      setState(() {
+        _lyrics = data;
+        print('run this second');
+      });
+    });
   }
 
   @override
   void dispose() {
     AdsUtil.hideBannerAd();
+    _subject.close();
     super.dispose();
   }
 
@@ -42,7 +73,9 @@ class _HomePageState extends State<HomePage>
       drawer: _buildDrawerWidget(),
       body: Column(
         children: <Widget>[
-          Expanded(child: CustomAppbar(_buildLirikLaguWidget(_lyrics))),
+          Expanded(
+            child: CustomAppbar(body: _buildLirikLaguWidget()),
+          ),
           Container(
             height: 50.0,
             width: double.infinity,
@@ -53,48 +86,73 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  Widget _buildLirikLaguWidget(List<Lyric> lyrics) {
-    return lyrics.length != 0 && lyrics != null
-        ? ListView.builder(
-            padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-            itemCount: lyrics != null && lyrics.length > 0 ? lyrics.length : 0,
-            itemBuilder: (BuildContext context, int index) => LyricListItem(
-              onCardPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (BuildContext context) => DetailPage(
-                      lyric: lyrics[index],
-                    ),
-                  ),
-                );
-              },
-              icon: lyrics[index].isFavored
-                  ? Icon(
-                      Icons.favorite,
-                      color: Colors.pink,
-                    )
-                  : Icon(Icons.favorite_border),
-              lyric: lyrics[index],
-              onFavoriteButtonPressed: lyrics[index].isFavored
-                  ? () {
-                      setState(() {
-                        lyrics[index].isFavored = false;
-                      });
-                      SprefUtil.removeFavorite(lyrics[index].id);
-                      SprefUtil.adsCounter();
-                    }
-                  : () {
-                      setState(() {
-                        lyrics[index].isFavored = true;
-                      });
-                      SprefUtil.storeFavorite(lyrics[index].id);
-                      SprefUtil.adsCounter();
-                    },
+  Widget _buildLirikLaguWidget() {
+    return ListView(
+      padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16.0,
+            vertical: 20.0,
+          ),
+          child: TextFormField(
+            keyboardType: TextInputType.text,
+            decoration: InputDecoration(
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(26.0),
+                  borderSide: BorderSide(width: 1.0)),
+              hintText: 'Cari Lirik Lagu',
+              hintStyle: TextStyle(fontSize: 16.0),
             ),
-          )
-        : Center(
-            child: Text('Tidak ada data, pastikan terhubung ke internet'),
-          );
+            onChanged: (String value) => (_subject.add(value)),
+          ),
+        ),
+        !_isLoading
+            ? Column(
+                children: _lyrics.map((lyric) {
+                  return LyricListItem(
+                    onCardPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (BuildContext context) => DetailPage(
+                            lyric: lyric,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: lyric.isFavored
+                        ? Icon(
+                            Icons.favorite,
+                            color: Colors.pink,
+                          )
+                        : Icon(Icons.favorite_border),
+                    lyric: lyric,
+                    onFavoriteButtonPressed: lyric.isFavored
+                        ? () {
+                            setState(() {
+                              lyric.isFavored = false;
+                            });
+                            Repository.get().removeItAsFavorite(lyric.id);
+                            // SprefUtil.adsCounter();
+                          }
+                        : () {
+                            setState(() {
+                              lyric.isFavored = true;
+                            });
+                            print('here first : '+lyric.id);
+                            Repository.get().makeItFavorite(lyric.id);
+                            // SprefUtil.adsCounter();
+                          },
+                  );
+                }).toList(),
+              )
+            : Center(
+                child: CircularProgressIndicator(),
+              )
+      ],
+    );
   }
 
   Widget _buildDrawerWidget() {
