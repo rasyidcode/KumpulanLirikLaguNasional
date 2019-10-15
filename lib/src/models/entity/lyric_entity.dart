@@ -11,8 +11,8 @@ class LyricEntity {
   static const String DB_COVER_IMAGE_SOURCE = "cover_image_source";
 
 
-  String id;
-  String lyrics;
+  final String _id;
+  final String _lyrics;
   final String _title;
   final String _maker;
   final String _desc;
@@ -23,22 +23,29 @@ class LyricEntity {
   final String _coverImageSource;
 
   LyricEntity.fromMap(Map map) :
-  id = '',
+  _id = map['id'],
   _title = map['title'],
   _maker = map['maker'],
-  lyrics = map['lyrics'],
+  _lyrics = map['lyrics'],
   _desc = map['desc'],
   _videoId = map['video_id'],
   _audioUrl = map['audio_url'],
-  isFavored = false,
+  isFavored = map['is_favored'] == 1 ? true : false,
   _coverImageUrl = map['cover_image_url'],
   _coverImageSource = map['cover_image_source'];
 
+  String get id => _id;
   String get title => _title;
   String get maker => _maker;
   String get desc => _desc;
+  String get lyrics => _lyrics;
   String get videoId => _videoId;
   String get audioUrl => _audioUrl;
   String get coverImageUrl => _coverImageUrl;
   String get coverImageSource => _coverImageSource;
+
+  @override
+  String toString() {
+    return "This is Lyric Entity with id of $id";
+  }
 }

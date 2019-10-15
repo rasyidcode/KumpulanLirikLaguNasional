@@ -38,29 +38,22 @@ class LyricDatabase {
     List<Map<String, dynamic>> data =
         await db.rawQuery('SELECT * FROM $tableName');
 
-    return data.length;
+    return data == null ? 0 : data.length;
   }
 
   Future<Null> removeFavoriteLyric(String id) async {
     Database db = await _getDatabase();
 
-    int value = await db.rawUpdate(
-      'UPDATE $tableName SET ${LyricEntity.DB_IS_FAVORED} = "0" WHERE ${LyricEntity.DB_ID} = "$id"',
+    await db.rawUpdate(
+      'UPDATE $tableName SET ${LyricEntity.DB_IS_FAVORED} = ? WHERE ${LyricEntity.DB_ID} = "$id"', [0],
     );
-    print('removed state: '+value.toString());
   }
 
   Future<Null> makeFavoriteLyric(String id) async {
     Database db = await _getDatabase();
-    print('here is id : '+id);
-    List<Map<String, dynamic>> lyrics = await db.rawQuery('SELECT * FROM $tableName WHERE ${LyricEntity.DB_ID} = ("$id")');
-    // List<Map<String, dynamic>> lyrics2 = await db.query(tableName, where: '${LyricEntity.DB_ID} = ?', whereArgs: ['$id']);
-    // print(lyrics[0]);
 
-    int value = await db.rawUpdate(
-        'UPDATE $tableName SET ${LyricEntity.DB_IS_FAVORED} = "1" WHERE ${LyricEntity.DB_ID} = "$id"');
-
-    print('added state: '+value.toString());
+    await db.rawUpdate(
+        'UPDATE $tableName SET ${LyricEntity.DB_IS_FAVORED} = ? WHERE ${LyricEntity.DB_ID} = "$id"', [1]);
   }
 
   Future<List<LyricEntity>> getFavoriteLyrics() async {
@@ -157,5 +150,8 @@ class LyricDatabase {
         "${LyricEntity.DB_COVER_IMAGE_URL} TEXT, "
         "${LyricEntity.DB_COVER_IMAGE_SOURCE} TEXT"
         ")");
+
+    // create table ads
+    // await db.execute("CREATE TABLE ")
   }
 }

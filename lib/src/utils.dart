@@ -52,6 +52,14 @@ import 'package:kumpulan_lirik_lagu_kebangsaan/src/personal/admob.dart'
 //   }
 // }
 
+class DatabaseUtils {
+
+  static void adsCounter() async {
+    
+  }
+
+}
+
 class AdsUtil {
   static BannerAd _bannerAd;
   static InterstitialAd _interstitialAd;
@@ -64,7 +72,7 @@ class AdsUtil {
     return BannerAd(
       // adUnitId: BANNER_ID,
       adUnitId: BannerAd.testAdUnitId,
-      size: AdSize.smartBanner,
+      size: AdSize.banner,
       listener: (MobileAdEvent event) {
         print('BannerAd event $event');
       }

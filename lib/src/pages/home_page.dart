@@ -1,3 +1,4 @@
+import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/data/repository.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/entity/lyric_entity.dart';
@@ -51,11 +52,13 @@ class _HomePageState extends State<HomePage>
     _subject.stream
         .debounce((String _) => TimerStream(true, Duration(milliseconds: 600)))
         .listen(_textChanged);
-    print('run this first');
+
+    _isLoading = true;
+
     Repository.get().getLyrics('').then((data) {
       setState(() {
         _lyrics = data;
-        print('run this second');
+        _isLoading = false;
       });
     });
   }
@@ -77,7 +80,7 @@ class _HomePageState extends State<HomePage>
             child: CustomAppbar(body: _buildLirikLaguWidget()),
           ),
           Container(
-            height: 50.0,
+            height: AdSize.banner.height.toDouble(),
             width: double.infinity,
             color: Colors.transparent,
           )
@@ -141,16 +144,13 @@ class _HomePageState extends State<HomePage>
                             setState(() {
                               lyric.isFavored = true;
                             });
-                            print('here first : '+lyric.id);
                             Repository.get().makeItFavorite(lyric.id);
                             // SprefUtil.adsCounter();
                           },
                   );
                 }).toList(),
               )
-            : Center(
-                child: CircularProgressIndicator(),
-              )
+            : Center(child: CircularProgressIndicator())
       ],
     );
   }

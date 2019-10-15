@@ -5,7 +5,7 @@ import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/entity/lyric_entity.da
 
 class Repository {
   static final Repository _repo = Repository._internal();
-  List<LyricApi> _lyrics;
+  List<LyricApi> _lyricsApi;
   ApiService _apiService;
   LyricDatabase _database;
 
@@ -16,14 +16,14 @@ class Repository {
     _database = LyricDatabase.get();
 
     _apiService.fetchLyrics().then((data) {
-      _lyrics = data;
+      _lyricsApi = data;
     });
   }
 
   Future<List<LyricEntity>> getLyrics(title) async {
     await _database.lyricsCount().then((counter) {
       if (counter == 0) {
-        _database.insertLyrics(_lyrics);
+        _database.insertLyrics(_lyricsApi);
       }
     });
 
