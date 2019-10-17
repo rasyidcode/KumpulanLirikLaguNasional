@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/entity/lyric_entity.dart';
-import 'package:kumpulan_lirik_lagu_kebangsaan/src/pages/detail_page.dart';
 
 class LyricListItem extends StatelessWidget {
   final LyricEntity lyric;
@@ -25,9 +24,11 @@ class LyricListItem extends StatelessWidget {
           child: Row(
             children: <Widget>[
               CachedNetworkImage(
-                imageUrl:
-                    lyric.coverImageUrl,
-                placeholder: (_, __) => CircularProgressIndicator(value: 5, strokeWidth: 2,),
+                imageUrl: lyric.coverImageUrl,
+                placeholder: (_, __) => CircularProgressIndicator(
+                  value: 5,
+                  strokeWidth: 2,
+                ),
                 errorWidget: (_, __, ___) => Icon(Icons.error),
                 fit: BoxFit.cover,
                 width: 80.0,
@@ -41,7 +42,11 @@ class LyricListItem extends StatelessWidget {
                     children: <Widget>[
                       Text(
                         lyric.title,
-                        style: TextStyle(fontSize: 14.0, color: Colors.black87),
+                        style: TextStyle(
+                          fontSize: 14.0,
+                          color: Colors.black87,
+                          fontFamily: 'Poppins'
+                        ),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),

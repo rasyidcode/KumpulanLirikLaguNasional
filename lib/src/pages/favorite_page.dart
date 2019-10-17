@@ -1,6 +1,6 @@
-import 'dart:async';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:kumpulan_lirik_lagu_kebangsaan/src/data_holder.dart';
+import 'package:kumpulan_lirik_lagu_kebangsaan/src/data/repository.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/entity/lyric_entity.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/pages/detail_page.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/utils.dart';
@@ -11,28 +11,11 @@ class FavoritePage extends StatefulWidget {
 }
 
 class _FavoritePageState extends State<FavoritePage> {
-  Future<List<LyricEntity>> _getDataFavorite() async {
-    List<LyricEntity> _lyricFav = [];
-
-    // await SharedPreferences.getInstance().then((spref) {
-    //   List<String> currentFavs = spref.getStringList('favs');
-    //   if (currentFavs.isNotEmpty) {
-    //     currentFavs.forEach((id) {
-    //       setState(() {
-    //         _lyricFav.add(
-    //             DataHolder.dataLyrics.singleWhere((lyric) => lyric.id == id));
-    //       });
-    //     });
-    //   }
-    // });
-
-    return _lyricFav;
-  }
-
   void onFavoritePressed(LyricEntity lyric) async {
-    lyric.isFavored = false;
-    // SprefUtil.removeFavorite(lyric.id);
-    setState(() {});
+    Repository.get().removeItAsFavorite(lyric.id);
+    setState(() {
+      lyric.isFavored = false;
+    });
   }
 
   @override
@@ -46,11 +29,15 @@ class _FavoritePageState extends State<FavoritePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Lirik Favorit'),
+        title: Text(
+          'Lirik Favorit',
+          style: TextStyle(fontFamily: 'Poppins'),
+        ),
       ),
       body: FutureBuilder(
-        future: _getDataFavorite(),
-        builder: (BuildContext context, AsyncSnapshot<List<LyricEntity>> snapshot) {
+        future: Repository.get().getFavoriteLyrics(),
+        builder:
+            (BuildContext context, AsyncSnapshot<List<LyricEntity>> snapshot) {
           if (snapshot.hasError) {
             print(snapshot.error);
             return Center(
@@ -98,9 +85,15 @@ class _FavoritePageState extends State<FavoritePage> {
         elevation: 1.0,
         child: Stack(
           children: <Widget>[
-            Image.network(
-              lyric.coverImageUrl,
+            CachedNetworkImage(
+              imageUrl: lyric.coverImageUrl,
+              placeholder: (_, __) => CircularProgressIndicator(
+                value: 5,
+                strokeWidth: 2,
+              ),
+              errorWidget: (_, __, ___) => Icon(Icons.error),
               fit: BoxFit.cover,
+              width: double.infinity,
               height: double.infinity,
             ),
             Column(

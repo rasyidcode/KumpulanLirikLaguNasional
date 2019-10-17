@@ -22,6 +22,8 @@ class _HomePageState extends State<HomePage>
   final PublishSubject<String> _subject = PublishSubject<String>();
   bool _isLoading = false;
   List<LyricEntity> _lyrics = <LyricEntity>[];
+  DateTime date = DateTime.now();
+  String currentDate = "";
 
   void _textChanged(String value) {
     setState(() {
@@ -43,6 +45,16 @@ class _HomePageState extends State<HomePage>
     });
   }
 
+  void _initAds() async {
+    currentDate = "${date.day}-${date.month}-${date.year}";
+
+    Repository.get().getAdsCounter(currentDate).then((ads) {
+      if (ads.date == '0-0-0000') {
+        Repository.get().createAdsCounter(currentDate);
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -61,6 +73,8 @@ class _HomePageState extends State<HomePage>
         _isLoading = false;
       });
     });
+
+    _initAds();
   }
 
   @override
@@ -137,15 +151,17 @@ class _HomePageState extends State<HomePage>
                             setState(() {
                               lyric.isFavored = false;
                             });
+
                             Repository.get().removeItAsFavorite(lyric.id);
-                            // SprefUtil.adsCounter();
+                            Repository.get().updateAdsCounter(currentDate);
                           }
                         : () {
                             setState(() {
                               lyric.isFavored = true;
                             });
+
                             Repository.get().makeItFavorite(lyric.id);
-                            // SprefUtil.adsCounter();
+                            Repository.get().updateAdsCounter(currentDate);
                           },
                   );
                 }).toList(),
@@ -179,11 +195,12 @@ class _HomePageState extends State<HomePage>
                           EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                       color: Colors.black54,
                       child: Text(
-                        'Kumpulan lirik lagu nasional',
+                        'Kumpulan lirik & lagu nasional',
                         style: TextStyle(
                             color: Colors.white70,
                             fontSize: 16.0,
-                            fontWeight: FontWeight.bold),
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Poppins'),
                       ),
                     ),
                   ),
@@ -194,22 +211,53 @@ class _HomePageState extends State<HomePage>
             children: <Widget>[
               ListTile(
                 leading: Icon(
+                  Icons.rate_review,
+                  color: Colors.orange,
+                ),
+                title: Text(
+                  'Rate Us',
+                  style: TextStyle(fontFamily: 'Poppins'),
+                ),
+                onTap: () async {
+                  const url =
+                      'http://play.google.com/store/apps/details?id=me.jamilalrasyidis.kumpulan_lirik_lagu_kebangsaan';
+                  if (await canLaunch(url)) {
+                    await launch(url);
+                  } else {
+                    throw 'Could not launch $url';
+                  }
+                },
+              ),
+              ListTile(
+                leading: Icon(
                   Icons.favorite,
                   color: Colors.pink,
                 ),
-                title: Text('Lirik Favorit'),
+                title: Text(
+                  'Lirik Favorit',
+                  style: TextStyle(fontFamily: 'Poppins'),
+                ),
                 onTap: () {
                   Navigator.of(context)
                       .push(MaterialPageRoute(
                           builder: (BuildContext context) => FavoritePage()))
                       .then((value) {
                     AdsUtil.showBannerAd();
+
+                    Repository.get().getLyrics('').then((data) {
+                      setState(() {
+                        _lyrics = data;
+                      });
+                    });
                   });
                 },
               ),
               ListTile(
                 leading: Icon(Icons.lock_outline, color: Colors.black),
-                title: Text('Privacy Policy'),
+                title: Text(
+                  'Privacy Policy',
+                  style: TextStyle(fontFamily: 'Poppins'),
+                ),
                 onTap: () {
                   Navigator.of(context)
                       .push(MaterialPageRoute(
@@ -218,7 +266,6 @@ class _HomePageState extends State<HomePage>
                       .then((value) {
                     AdsUtil.showBannerAd();
                   });
-                  ;
                 },
               ),
               ListTile(
@@ -226,7 +273,10 @@ class _HomePageState extends State<HomePage>
                   Icons.apps,
                   color: Colors.green,
                 ),
-                title: Text('Aplikasi Lainnya'),
+                title: Text(
+                  'Aplikasi Lainnya',
+                  style: TextStyle(fontFamily: 'Poppins'),
+                ),
                 onTap: () async {
                   const url =
                       'https://play.google.com/store/apps/developer?id=RasyidCODE';
@@ -242,7 +292,10 @@ class _HomePageState extends State<HomePage>
                   Icons.info,
                   color: Colors.blue,
                 ),
-                title: Text('About'),
+                title: Text(
+                  'About',
+                  style: TextStyle(fontFamily: 'Poppins'),
+                ),
                 onTap: () {
                   Navigator.of(context)
                       .push(MaterialPageRoute(

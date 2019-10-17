@@ -1,6 +1,9 @@
 # kumpulan-lirik-lagu-kebangsaan
 Kumpulan lirik lagu kebangsaan
 
+# Command To Deploy
+flutter build apk --build-name=1.0.3 --build-number=3
+
 # Plan new
 - New Database Design
   Database :

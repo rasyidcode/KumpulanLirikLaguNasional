@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:kumpulan_lirik_lagu_kebangsaan/src/pages/about_page.dart';
-import 'package:kumpulan_lirik_lagu_kebangsaan/src/pages/detail_page.dart';
-import 'package:kumpulan_lirik_lagu_kebangsaan/src/pages/home_page.dart';
-import 'package:kumpulan_lirik_lagu_kebangsaan/src/pages/privacy_policy_page.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/pages/splash_screen_page.dart';
 
 class KumpulanLirikLaguKebangsaanApp extends StatelessWidget {
@@ -12,7 +8,8 @@ class KumpulanLirikLaguKebangsaanApp extends StatelessWidget {
       title: 'Kumpulan Lirik Lagu Kebangsaan',
       theme: ThemeData(
         primaryColor: Colors.red,
-        accentColor: Colors.redAccent
+        accentColor: Colors.redAccent,
+        fontFamily: 'Ubuntu'
       ),
       home: SplashScreenPage(),
     );

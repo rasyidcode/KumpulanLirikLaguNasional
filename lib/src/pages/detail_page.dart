@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 // import 'package:url_launcher/url_launcher.dart';
 // import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:kumpulan_lirik_lagu_kebangsaan/src/data/repository.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/entity/lyric_entity.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/ui/control_audio_button.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/utils.dart';
@@ -41,6 +42,8 @@ class _DetailPageState extends State<DetailPage> {
   get _positionText => _position?.toString()?.split('.')?.first ?? '';
 
   LyricEntity lyric;
+  DateTime dt = DateTime.now();
+  String currentDate = '';
 
   void _initAudioPlayer() {
     _audioPlayer = AudioPlayer(mode: _mode);
@@ -65,7 +68,6 @@ class _DetailPageState extends State<DetailPage> {
     });
 
     _playerErrorSubs = _audioPlayer.onPlayerError.listen((msg) {
-      print('audio player : $msg');
       setState(() {
         _playerState = PlayerState.stopped;
         _duration = Duration(seconds: 0);
@@ -86,7 +88,6 @@ class _DetailPageState extends State<DetailPage> {
       _playerState = PlayerState.stopped;
     });
 
-    print('song ended.');
     AdsUtil.showInterstitialAd();
   }
 
@@ -98,6 +99,7 @@ class _DetailPageState extends State<DetailPage> {
         ? _position
         : null;
     final result = await _audioPlayer.play(url, position: playPosition);
+
     if (result == 1) {
       setState(() {
         _playerState = PlayerState.playing;
@@ -129,6 +131,8 @@ class _DetailPageState extends State<DetailPage> {
   void initState() {
     super.initState();
     lyric = widget.lyric;
+    currentDate = '${dt.day}-${dt.month}-${dt.year}';
+
     _initAudioPlayer();
   }
 
@@ -177,8 +181,13 @@ class _DetailPageState extends State<DetailPage> {
                           ControlAudioButton(
                             icon: Icons.play_arrow,
                             color: _isPlaying ? Colors.white70 : Colors.white,
-                            onPressed:
-                                _isPlaying ? null : () => _play(lyric.audioUrl),
+                            onPressed: _isPlaying
+                                ? null
+                                : () async {
+                                    await Repository.get()
+                                        .updateAdsCounter(currentDate);
+                                    _play(lyric.audioUrl);
+                                  },
                           ),
                           ControlAudioButton(
                             icon: Icons.pause,
@@ -239,7 +248,8 @@ class _DetailPageState extends State<DetailPage> {
                         style: TextStyle(
                             fontSize: 23.0,
                             fontWeight: FontWeight.w700,
-                            color: Colors.black87),
+                            color: Colors.black87,
+                            fontFamily: 'Poppins'),
                       ),
                       Text(
                         'Oleh : ${lyric.maker}',
@@ -251,7 +261,8 @@ class _DetailPageState extends State<DetailPage> {
                         style: TextStyle(
                             fontSize: 16.0,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87),
+                            color: Colors.black87,
+                            fontFamily: 'Poppins'),
                       ),
                       SizedBox(height: 10.0),
                       SelectableText(
@@ -265,7 +276,8 @@ class _DetailPageState extends State<DetailPage> {
                         style: TextStyle(
                             fontSize: 16.0,
                             fontWeight: FontWeight.w700,
-                            color: Colors.black87),
+                            color: Colors.black87,
+                            fontFamily: 'Poppins'),
                       ),
                       SizedBox(height: 10.0),
                       Row(
@@ -275,7 +287,8 @@ class _DetailPageState extends State<DetailPage> {
                             style: TextStyle(
                                 color: Colors.black87,
                                 fontStyle: FontStyle.italic,
-                                fontSize: 12.0),
+                                fontSize: 12.0,
+                                fontFamily: 'Poppins'),
                           ),
                           Padding(
                             padding: const EdgeInsets.only(left: 0.0),
@@ -291,10 +304,11 @@ class _DetailPageState extends State<DetailPage> {
                               child: Text(
                                 'link',
                                 style: TextStyle(
-                                    color: Colors.blue,
-                                    decoration: TextDecoration.underline,
-                                    fontStyle: FontStyle.italic,
-                                    fontSize: 12.0),
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                  fontStyle: FontStyle.italic,
+                                  fontSize: 12.0,
+                                ),
                               ),
                             ),
                           )
@@ -305,9 +319,11 @@ class _DetailPageState extends State<DetailPage> {
                           Text(
                             'Audio Source : ',
                             style: TextStyle(
-                                color: Colors.black87,
-                                fontStyle: FontStyle.italic,
-                                fontSize: 12.0),
+                              color: Colors.black87,
+                              fontStyle: FontStyle.italic,
+                              fontSize: 12.0,
+                              fontFamily: 'Poppins'
+                            ),
                           ),
                           Padding(
                             padding: const EdgeInsets.only(left: 0.0),

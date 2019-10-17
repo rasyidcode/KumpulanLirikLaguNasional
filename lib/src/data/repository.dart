@@ -1,7 +1,9 @@
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/data/api_service.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/data/database.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/api/lyric_api.dart';
+import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/entity/ads_entity.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/entity/lyric_entity.dart';
+import 'package:kumpulan_lirik_lagu_kebangsaan/src/utils.dart';
 
 class Repository {
   static final Repository _repo = Repository._internal();
@@ -38,11 +40,32 @@ class Repository {
     return _database.close();
   }
 
-  Future<Null> makeItFavorite(String id) async {
-    return _database.makeFavoriteLyric(id);
+  void makeItFavorite(String id) async {
+    _database.makeFavoriteLyric(id);
   }
 
-  Future<Null> removeItAsFavorite(String id) async {
-    return _database.removeFavoriteLyric(id);
+  void removeItAsFavorite(String id) async {
+    _database.removeFavoriteLyric(id);
+  }
+
+  Future<AdsEntity> getAdsCounter(String date) async {
+    return _database.getAds(date);
+  }
+
+  void createAdsCounter(String date) async {
+    await _database.addAds(date);
+  }
+
+  Future<Null> updateAdsCounter(String date) async {
+    AdsEntity ads = await _database.getAds(date);
+
+    if (ads.counter >= 3) {
+      AdsUtil.showInterstitialAd();
+      ads.counter = 0;
+
+      await _database.updateAds(ads.date, ads.counter, ads.cyclerCounter + 1);
+    }
+
+    await _database.updateAds(date, ads.counter + 1, ads.cyclerCounter);
   }
 }
