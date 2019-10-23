@@ -67,10 +67,12 @@ class _HomePageState extends State<HomePage>
 
     _isLoading = true;
 
-    Repository.get().getLyrics('').then((data) {
-      setState(() {
-        _lyrics = data;
-        _isLoading = false;
+    Repository.get().fetchLyrics().then((_) {
+      Repository.get().getLyrics('').then((data) {
+        setState(() {
+          _lyrics = data;
+          _isLoading = false;
+        });
       });
     });
 

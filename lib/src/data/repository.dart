@@ -7,7 +7,6 @@ import 'package:kumpulan_lirik_lagu_kebangsaan/src/utils.dart';
 
 class Repository {
   static final Repository _repo = Repository._internal();
-  List<LyricApi> _lyricsApi;
   ApiService _apiService;
   LyricDatabase _database;
 
@@ -16,19 +15,19 @@ class Repository {
   Repository._internal() {
     _apiService = ApiService.get();
     _database = LyricDatabase.get();
+  }
 
-    _apiService.fetchLyrics().then((data) {
-      _lyricsApi = data;
+  Future<Null> fetchLyrics() async {
+    await _database.lyricsCount().then((counter) async {
+      if (counter == 0) {
+        await _apiService.fetchLyrics().then((data) async {
+          await _database.insertLyrics(data);
+        });
+      }
     });
   }
 
   Future<List<LyricEntity>> getLyrics(title) async {
-    await _database.lyricsCount().then((counter) {
-      if (counter == 0) {
-        _database.insertLyrics(_lyricsApi);
-      }
-    });
-
     return _database.getLyrics(title);
   }
 
