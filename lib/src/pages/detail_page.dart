@@ -87,8 +87,6 @@ class _DetailPageState extends State<DetailPage> {
     setState(() {
       _playerState = PlayerState.stopped;
     });
-
-    AdsUtil.showInterstitialAd();
   }
 
   Future<int> _play(String url) async {
@@ -183,11 +181,7 @@ class _DetailPageState extends State<DetailPage> {
                             color: _isPlaying ? Colors.white70 : Colors.white,
                             onPressed: _isPlaying
                                 ? null
-                                : () async {
-                                    await Repository.get()
-                                        .updateAdsCounter(currentDate);
-                                    _play(lyric.audioUrl);
-                                  },
+                                : () =>  _play(lyric.audioUrl)
                           ),
                           ControlAudioButton(
                             icon: Icons.pause,

@@ -12,26 +12,24 @@ class AdsUtil {
 
   static BannerAd _createBannerAd() {
     return BannerAd(
-      adUnitId: BANNER_ID,
-      // adUnitId: BannerAd.testAdUnitId,
-      size: AdSize.banner,
-      listener: (MobileAdEvent event) {
-        print('BannerAd event $event');
-      }
-    );
+        adUnitId: BANNER_ID,
+        // adUnitId: BannerAd.testAdUnitId,
+        size: AdSize.banner,
+        listener: (MobileAdEvent event) {
+          print('BannerAd event $event');
+        });
   }
 
   static InterstitialAd _createInterstitialAds() {
     return InterstitialAd(
-      adUnitId: INTERSTITIAL_ID,
-      // adUnitId: InterstitialAd.testAdUnitId,
-      listener: (MobileAdEvent event) {
-        print('InterstitialAd event $event');
-      }
-    );
+        adUnitId: INTERSTITIAL_ID,
+        // adUnitId: InterstitialAd.testAdUnitId,
+        listener: (MobileAdEvent event) {
+          print('InterstitialAd event $event');
+        });
   }
 
-  static void showBannerAd() {
+  static void loadAndShowBannerAd() {
     if (_bannerAd == null) _bannerAd = _createBannerAd();
     _bannerAd
       ..load()
@@ -40,7 +38,7 @@ class AdsUtil {
 
   static void showInterstitialAd() {
     _interstitialAd = _createInterstitialAds();
-    
+
     _interstitialAd
       ..load()
       ..show();

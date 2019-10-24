@@ -46,6 +46,9 @@ class _HomePageState extends State<HomePage>
   }
 
   void _initAds() async {
+    AdsUtil.initialize();
+    AdsUtil.loadAndShowBannerAd();
+
     currentDate = "${date.day}-${date.month}-${date.year}";
 
     Repository.get().getAdsCounter(currentDate).then((ads) {
@@ -58,8 +61,7 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
-    AdsUtil.initialize();
-    AdsUtil.showBannerAd();
+    _initAds();
 
     _subject.stream
         .debounce((String _) => TimerStream(true, Duration(milliseconds: 600)))
@@ -75,8 +77,6 @@ class _HomePageState extends State<HomePage>
         });
       });
     });
-
-    _initAds();
   }
 
   @override
@@ -133,6 +133,8 @@ class _HomePageState extends State<HomePage>
                 children: _lyrics.map((lyric) {
                   return LyricListItem(
                     onCardPressed: () {
+                      Repository.get().updateAdsCounter(currentDate);
+
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (BuildContext context) => DetailPage(
@@ -155,7 +157,6 @@ class _HomePageState extends State<HomePage>
                             });
 
                             Repository.get().removeItAsFavorite(lyric.id);
-                            Repository.get().updateAdsCounter(currentDate);
                           }
                         : () {
                             setState(() {
@@ -163,7 +164,6 @@ class _HomePageState extends State<HomePage>
                             });
 
                             Repository.get().makeItFavorite(lyric.id);
-                            Repository.get().updateAdsCounter(currentDate);
                           },
                   );
                 }).toList(),
@@ -179,35 +179,36 @@ class _HomePageState extends State<HomePage>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           DrawerHeader(
-              padding: EdgeInsets.zero,
-              decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor,
-                  image: DecorationImage(
-                      image: AssetImage('assets/indo_flag.jpg'),
-                      fit: BoxFit.cover)),
-              child: Container(
-                width: double.infinity,
-                height: double.infinity,
-                child: Align(
-                  alignment: Alignment.bottomLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0, left: 8.0),
-                    child: Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                      color: Colors.black54,
-                      child: Text(
-                        'Kumpulan lirik & lagu nasional',
-                        style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Poppins'),
-                      ),
+            padding: EdgeInsets.zero,
+            decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor,
+                image: DecorationImage(
+                    image: AssetImage('assets/indo_flag.jpg'),
+                    fit: BoxFit.cover)),
+            child: Container(
+              width: double.infinity,
+              height: double.infinity,
+              child: Align(
+                alignment: Alignment.bottomLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0, left: 8.0),
+                  child: Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                    color: Colors.black54,
+                    child: Text(
+                      'Kumpulan lirik & lagu nasional',
+                      style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Poppins'),
                     ),
                   ),
                 ),
-              )),
+              ),
+            ),
+          ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -244,8 +245,6 @@ class _HomePageState extends State<HomePage>
                       .push(MaterialPageRoute(
                           builder: (BuildContext context) => FavoritePage()))
                       .then((value) {
-                    AdsUtil.showBannerAd();
-
                     Repository.get().getLyrics('').then((data) {
                       setState(() {
                         _lyrics = data;
@@ -261,13 +260,10 @@ class _HomePageState extends State<HomePage>
                   style: TextStyle(fontFamily: 'Poppins'),
                 ),
                 onTap: () {
-                  Navigator.of(context)
-                      .push(MaterialPageRoute(
-                          builder: (BuildContext context) =>
-                              PrivacyPolicyPage()))
-                      .then((value) {
-                    AdsUtil.showBannerAd();
-                  });
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (BuildContext context) => PrivacyPolicyPage())).then((_) {
+                        AdsUtil.loadAndShowBannerAd();
+                      });
                 },
               ),
               ListTile(
@@ -299,12 +295,10 @@ class _HomePageState extends State<HomePage>
                   style: TextStyle(fontFamily: 'Poppins'),
                 ),
                 onTap: () {
-                  Navigator.of(context)
-                      .push(MaterialPageRoute(
-                          builder: (BuildContext context) => AboutPage()))
-                      .then((value) {
-                    AdsUtil.showBannerAd();
-                  });
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (BuildContext context) => AboutPage())).then((_) {
+                        AdsUtil.loadAndShowBannerAd();
+                      });
                 },
               ),
             ],

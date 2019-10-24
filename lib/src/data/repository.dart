@@ -57,14 +57,15 @@ class Repository {
 
   Future<Null> updateAdsCounter(String date) async {
     AdsEntity ads = await _database.getAds(date);
-
-    if (ads.counter >= 3) {
+    print(ads.counter);
+    if (ads.counter >= 4) {
+      print(ads.counter);
       AdsUtil.showInterstitialAd();
       ads.counter = 0;
 
       await _database.updateAds(ads.date, ads.counter, ads.cyclerCounter + 1);
+    } else {
+      await _database.updateAds(date, ads.counter + 1, ads.cyclerCounter);
     }
-
-    await _database.updateAds(date, ads.counter + 1, ads.cyclerCounter);
   }
 }

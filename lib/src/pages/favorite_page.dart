@@ -1,9 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/data/repository.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/models/entity/lyric_entity.dart';
 import 'package:kumpulan_lirik_lagu_kebangsaan/src/pages/detail_page.dart';
-import 'package:kumpulan_lirik_lagu_kebangsaan/src/utils.dart';
 
 class FavoritePage extends StatefulWidget {
   @override
@@ -11,6 +11,9 @@ class FavoritePage extends StatefulWidget {
 }
 
 class _FavoritePageState extends State<FavoritePage> {
+  DateTime date = DateTime.now();
+  String currentDate = "";
+  
   void onFavoritePressed(LyricEntity lyric) async {
     Repository.get().removeItAsFavorite(lyric.id);
     setState(() {
@@ -21,8 +24,7 @@ class _FavoritePageState extends State<FavoritePage> {
   @override
   void initState() {
     super.initState();
-
-    AdsUtil.hideBannerAd();
+    currentDate = "${date.day}-${date.month}-${date.year}";
   }
 
   @override
@@ -34,39 +36,50 @@ class _FavoritePageState extends State<FavoritePage> {
           style: TextStyle(fontFamily: 'Poppins'),
         ),
       ),
-      body: FutureBuilder(
-        future: Repository.get().getFavoriteLyrics(),
-        builder:
-            (BuildContext context, AsyncSnapshot<List<LyricEntity>> snapshot) {
-          if (snapshot.hasError) {
-            print(snapshot.error);
-            return Center(
-              child: Text('somethin worng occured'),
-            );
-          }
+      body: Column(
+        children: <Widget>[
+          Expanded(
+            child: FutureBuilder(
+              future: Repository.get().getFavoriteLyrics(),
+              builder: (BuildContext context,
+                  AsyncSnapshot<List<LyricEntity>> snapshot) {
+                if (snapshot.hasError) {
+                  print(snapshot.error);
+                  return Center(
+                    child: Text('somethin worng occured'),
+                  );
+                }
 
-          return snapshot.hasData
-              ? snapshot.data.length != 0
-                  ? GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2),
-                      padding:
-                          EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-                      itemCount:
-                          snapshot.data != null && snapshot.data.length > 0
-                              ? snapshot.data.length
-                              : 0,
-                      itemBuilder: (BuildContext context, int index) {
-                        return _buildCardWidget(snapshot.data[index]);
-                      },
-                    )
-                  : Center(
-                      child: Text('Data favorit belum ada.'),
-                    )
-              : Center(
-                  child: CircularProgressIndicator(),
-                );
-        },
+                return snapshot.hasData
+                    ? snapshot.data.length != 0
+                        ? GridView.builder(
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2),
+                            padding: EdgeInsets.symmetric(
+                                vertical: 4.0, horizontal: 8.0),
+                            itemCount: snapshot.data != null &&
+                                    snapshot.data.length > 0
+                                ? snapshot.data.length
+                                : 0,
+                            itemBuilder: (BuildContext context, int index) {
+                              return _buildCardWidget(snapshot.data[index]);
+                            },
+                          )
+                        : Center(
+                            child: Text('Data favorit belum ada.'),
+                          )
+                    : Center(
+                        child: CircularProgressIndicator(),
+                      );
+              },
+            ),
+          ),
+          SizedBox(
+            width: double.infinity,
+            height: AdSize.banner.height.toDouble(),
+          )
+        ],
       ),
     );
   }
@@ -74,6 +87,8 @@ class _FavoritePageState extends State<FavoritePage> {
   Widget _buildCardWidget(LyricEntity lyric) {
     return GestureDetector(
       onTap: () {
+        Repository.get().updateAdsCounter(currentDate);
+
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (BuildContext context) => DetailPage(lyric: lyric),
