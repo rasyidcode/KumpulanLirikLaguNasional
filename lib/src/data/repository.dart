@@ -18,12 +18,10 @@ class Repository {
   }
 
   Future<Null> fetchLyrics() async {
-    await _database.lyricsCount().then((counter) async {
-      if (counter == 0) {
-        await _apiService.fetchLyrics().then((data) async {
-          await _database.insertLyrics(data);
-        });
-      }
+    await _database.deleteAllLyric();
+    
+    await _apiService.fetchLyrics().then((data) async {
+      await _database.insertLyrics(data);
     });
   }
 

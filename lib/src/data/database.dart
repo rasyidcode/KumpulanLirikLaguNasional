@@ -208,4 +208,9 @@ class LyricDatabase {
       }
     });
   }
+
+  Future<Null> deleteAllLyric() async {
+    Database db = await _getDatabase();
+    await db.rawDelete("DELETE FROM $lyricsTable");
+  }
 }
